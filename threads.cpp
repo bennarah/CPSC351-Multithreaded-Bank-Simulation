@@ -4,8 +4,8 @@ CPSC 351 - Multithreaded Bank Simulation
 Group Members:
 - Britaney Do (Step 1)
 - Bassma Ennarah (Step 2)
-- Elizabeth Philip (Step 3)
-- Sehaj Dhaliwal (Step 4 &  Step 5a)
+- Elizabeth Philip (Step 3 & 5a)
+- Sehaj Dhaliwal (Step 4)
 */
 
 #include <iostream>
@@ -18,7 +18,7 @@ Group Members:
 
 using namespace std;
 
-
+// a class which can be accessed by the threads
 class BankAccount
 {
 public:
@@ -31,7 +31,7 @@ public:
 
     void deposit(int amount)
     {
-        // Step 5a: Small delay to simulate overlapping access
+        // added Step 5a that is given to artifically delay to increase multiple threads
         this_thread::sleep_for(chrono::microseconds(5));
 
         int current = balance;
@@ -40,7 +40,7 @@ public:
 
     void withdraw(int amount)
     {
-        // Step 5a: Small delay to simulate overlapping access
+        // Step 5 again
         this_thread::sleep_for(chrono::microseconds(5));
 
         int current = balance;
@@ -61,7 +61,7 @@ void simulatedUser(BankAccount& account,
                    int runId,
                    int& netChange)
 {
-    mt19937 rng(seed);
+    mt19937 rng(seed);//random number generator 
     uniform_int_distribution<int> actionDist(0, 1);
     uniform_int_distribution<int> amountDist(1, 50);
 
@@ -86,7 +86,7 @@ void simulatedUser(BankAccount& account,
             log << "Withdraw -" << amount << endl;
         }
     }
-
+//step 4
     string filename = "log_run_" + to_string(runId) + "_thread_" + to_string(threadId) + ".txt";
     ofstream out(filename);
     out << log.str();
@@ -127,7 +127,7 @@ int main()
 
 
         for (auto& t : threads)
-            t.join();
+            t.join();//wait for threads to finish
 
         // Compute expected balance from net changes
         int expectedBalance = startBalance;
@@ -165,7 +165,7 @@ int main()
         }
         cout << mergedLog.str();
     }
-
+//runs are complete
     cout << "\n======================================" << endl;
     cout << "Total runs with race conditions: "
          << raceCount << " / " << numRuns << endl;
