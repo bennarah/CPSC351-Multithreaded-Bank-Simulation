@@ -6,7 +6,7 @@ This project simulates a shared bank account accessed by multiple threads to dem
 ## Implementation Status
 ✔ Step 1 – BankAccount class (Britaney)  
 ✔ Step 2 – Thread simulation with shared account (Bassma)  
-⬜ Step 3 – Loop in Main (Multiple Simulation Runs)
+✔ Step 3 – Loop in Main (Multiple Simulation Runs)
 ⬜ Step 4 – Thread Logging
 
 
