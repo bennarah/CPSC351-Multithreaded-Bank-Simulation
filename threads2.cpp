@@ -19,6 +19,7 @@ Group Members:
 #include <sys/mman.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <functional>
 
 using namespace std;
 
@@ -131,12 +132,12 @@ int main()
         for (int i = 0; i < numThreads; i++)
         {
             threads.emplace_back(simulatedUser,
-                                 ref(account),
-                                 transactionsPerThread,
-                                 rd(),
-                                 i + 1,
-                                 run,
-                                 ref(netChanges[i]));
+                     std::ref(account),
+                     transactionsPerThread,
+                     static_cast<int>(rd()),
+                     i + 1,
+                     run,
+                     std::ref(netChanges[i]));
         }
 
 
@@ -200,5 +201,15 @@ int main()
     shared_account->balance = startBalance;
     cout << "Initial balance in parent: " << shared_account->returnBalance() << endl;
  
+    int fd[2];
+    if (pipe(fd) == -1)
+    {
+        cerr << "Pipe creation failed" << endl;
+        return 1;
+    }
+    // fd[0] is the read end of the pipe
+    // fd[1] is the write end of the pipe
+    cout << "Pipe created successfully." << endl;
+
     return 0;
 }
