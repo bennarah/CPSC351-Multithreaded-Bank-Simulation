@@ -109,6 +109,35 @@ void simulatedUser(BankAccount& account,
 }
 
 // Step 3 + 4: Main Simulation
+void childWork(BankAccount* shared_account, int writeFd, int childId)
+{
+    mt19937 rng(time(nullptr) + childId);
+    uniform_int_distribution<int> actionDist(0, 1);
+    uniform_int_distribution<int> amountDist(1, 50);
+
+    ostringstream log;
+    log << "\n--- Child " << childId << " Transaction Log ---\n";
+
+    for (int i = 0; i < 20; i++)
+    {
+        int amount = amountDist(rng);
+        int action = actionDist(rng);
+
+        if (action == 0)
+        {
+            shared_account->deposit(amount);
+            log << "Child " << childId << ": Deposit +" << amount << endl;
+        }
+        else
+        {
+            shared_account->withdraw(amount);
+            log << "Child " << childId << ": Withdraw -" << amount << endl;
+        }
+    }
+
+    string output = log.str();
+    write(writeFd, output.c_str(), output.size());
+}
 
 int main()
 {
@@ -210,6 +239,47 @@ int main()
     // fd[0] is the read end of the pipe
     // fd[1] is the write end of the pipe
     cout << "Pipe created successfully." << endl;
+    pid_t pid1 = fork();
+
+if (pid1 == 0)
+{
+    close(fd[0]); // child 1 doesn't read
+    childWork(shared_account, fd[1], 1);
+    close(fd[1]);
+    exit(0);
+}
+
+pid_t pid2 = fork();
+
+if (pid2 == 0)
+{
+    close(fd[0]); // child 2 doesn't read
+    childWork(shared_account, fd[1], 2);
+    close(fd[1]);
+    exit(0);
+}
+
+// parent
+close(fd[1]);
+
+char buffer[4096];
+ssize_t bytesRead;
+
+cout << "\n--- Merged Logs From Children ---" << endl;
+
+while ((bytesRead = read(fd[0], buffer, sizeof(buffer) - 1)) > 0)
+{
+    buffer[bytesRead] = '\0';
+    cout << buffer;
+}
+
+close(fd[0]);
+
+waitpid(pid1, NULL, 0);
+waitpid(pid2, NULL, 0);
+
+cout << "\nFinal shared account balance: "
+     << shared_account->returnBalance() << endl;
 
     return 0;
 }
